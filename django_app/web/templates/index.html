@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lung Disease Classifier</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="hero">
+                <div>
+                    <span class="tag">Lung X-ray Diagnosis</span>
+                    <h1>Scan your chest X-ray and get fast guidance</h1>
+                    <p class="lead">Upload a chest X-ray image to detect pneumonia, get prevention advice, and recommended care steps.</p>
+                </div>
+            </div>
+
+            <div class="upload-area">
+                <form id="predict-form" enctype="multipart/form-data" method="post" action="/predict/">
+                    {% csrf_token %}
+                    <div class="input-file">
+                        <input type="file" name="file" accept="image/*" required>
+                        <button type="submit">Predict</button>
+                    </div>
+                </form>
+
+                <div id="result" class="result-card">
+                    <p class="instruction">Choose an X-ray image and click <strong>Predict</strong> to see the diagnosis and care advice.</p>
+                </div>
+            </div>
+
+            <div class="note-card">
+                <h2>How it works</h2>
+                <p>This interface uses your PyTorch lung classifier to analyse a chest X-ray and explain whether pneumonia looks likely, plus practical guidance for the next step.</p>
+            </div>
+
+            <footer>
+                Powered by Django + PyTorch • Model file from <strong>xray_model.pth</strong>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predict-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p class="instruction">Predicting... Please wait.</p>';
+
+            try {
+                const response = await fetch('/predict/', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="status-pill">${data.status}</div>
+                        <div class="result-heading">${data.prediction_label}</div>
+                        <p>${data.message}</p>
+                        <div class="advice-grid">
+                            <div class="advice-block">
+                                <h3>What to do next</h3>
+                                <p>${data.suggestion}</p>
+                            </div>
+                            <div class="advice-block">
+                                <h3>Prevention</h3>
+                                <p>${data.prevention}</p>
+                            </div>
+                            <div class="advice-block wide">
+                                <h3>Suggested care</h3>
+                                <p>${data.care}</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">Error: ${data.error || 'Prediction failed'}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
