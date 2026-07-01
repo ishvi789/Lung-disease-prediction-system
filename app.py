@@ -36,12 +36,14 @@ def load_model():
 def describe_prediction(prediction_index: int) -> str:
     if prediction_index == 1:
         return (
-            "Pneumonia is likely. This result is a screening aid, not a diagnosis. "
-            "Please seek medical care promptly, rest, stay hydrated, and follow your clinician's guidance."
+            "Pneumonia is likely. This result is a screening aid, not a diagnosis.\n"
+            "What to do next: seek medical care promptly, rest, stay hydrated, and follow your clinician's guidance.\n"
+            "Suggested care: a clinician may recommend antibiotics or further evaluation depending on symptoms and medical history."
         )
     return (
-        "Normal / no pneumonia detected. This X-ray does not appear to show pneumonia. "
-        "If symptoms continue, consult a doctor for a full evaluation."
+        "Normal / no pneumonia detected. This X-ray does not appear to show pneumonia.\n"
+        "What to do next: if symptoms continue, consult a doctor for a full evaluation.\n"
+        "Suggested care: maintain hydration, rest, and avoid respiratory irritants."
     )
 
 
@@ -50,7 +52,11 @@ def predict_image(image):
         return "Please upload a chest X-ray image first."
 
     load_model()
-    image = Image.open(image).convert("RGB")
+    if hasattr(image, "convert"):
+        image = image.convert("RGB")
+    else:
+        image = Image.open(image).convert("RGB")
+
     input_tensor = TRANSFORM(image).unsqueeze(0).to(DEVICE)
 
     with torch.no_grad():
