@@ -52,12 +52,17 @@ def predict_image(image):
         return "Please upload a chest X-ray image first."
 
     load_model()
-    if hasattr(image, "convert"):
-        image = image.convert("RGB")
-    else:
-        image = Image.open(image).convert("RGB")
+    try:
+        if hasattr(image, "convert"):
+            image_obj = image.convert("RGB")
+        elif hasattr(image, "shape") and len(image.shape) == 3:
+            image_obj = Image.fromarray(image).convert("RGB")
+        else:
+            image_obj = Image.open(image).convert("RGB")
+    except Exception:
+        return "The uploaded file could not be read. Please upload a valid image file."
 
-    input_tensor = TRANSFORM(image).unsqueeze(0).to(DEVICE)
+    input_tensor = TRANSFORM(image_obj).unsqueeze(0).to(DEVICE)
 
     with torch.no_grad():
         output = MODEL(input_tensor)
