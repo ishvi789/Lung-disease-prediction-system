@@ -76,7 +76,7 @@ def predict_image(image):
 iface = gr.Interface(
     fn=predict_image,
     inputs=gr.Image(type="pil", label="Upload chest X-ray"),
-    outputs=gr.Textbox(label="Result"),
+    outputs=gr.Textbox(label="Result", lines=10),
     title="Lung Disease Classifier",
     description="Upload a chest X-ray image to get a quick pneumonia screening result and basic guidance.",
     examples=[[str(ROOT_DIR / "sample_xray.png")]] if (ROOT_DIR / "sample_xray.png").exists() else None,
