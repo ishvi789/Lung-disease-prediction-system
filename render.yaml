@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: lung-disease-classifier
+    env: python
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt
+      python django_app/manage.py collectstatic --noinput
+    startCommand: |
+      gunicorn django_app.django_app.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: PYTHON_VERSION
+        value: "3.11.9"
